@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title> Animal GIFS </title>
+	<style type="text/css">
+		button,
+		div,
+		form,
+		input {
+			margin:10px;
+		}
+	</style>
+</head>
+
+<body>
+
+<div class="container">
+	<h1> Gif Search </h1>
+
+	<!-- This is a div where the buttons will go -->
+	<div id="buttons-view">
+	</div>
+
+	<!-- This is the search box -->
+	<form id="animal-form">
+		<label for="animal-input"> Search for a GIF </label>
+		<input type ="text" id="animal-input"> <br> 
+
+	<!-- This is the search button -->
+		<input id="add-animal" type="submit" value="Search for a GIF">
+	</form>
+
+
+	<!-- Animal gifs will go here -->
+	<div id="display"> </div>
+
+
+
+<script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script type="text/javascript">
+
+
+// Array for our initial animals 
+
+var topics = ["cat", "dog", "elephant", "bunny"];
+
+
+// URL/API
+
+function displayGifs() {
+
+	$("#display").empty();
+// In this case, "this" is refering to the button that you click on. Then it searches for the data-name, which we define later on in our for loop.
+var animal = $(this).attr("data-name");
+console.log(animal);
+var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + animal + "&api_key=dc6zaTOxFJmzC";
+console.log(queryURL);
+
+
+// This is the ajax call that goes to get the data from the API
+$.ajax({
+	url:queryURL, 
+	method:"GET"
+}).done(function(response) {
+
+	// This for loop goes through the data it recieves from the JSON/API,
+	// Then we asign a variable that will create an HTML image SRC and put in the fixed height url from whatever index the loop is on.
+	// Then we append that variable into our display div.  
+
+	for (var i = 0; i < response.data.length; i++) {
+
+	var spotOne = "<img src='" + response.data[i].images.fixed_height_still.url + "'data-still='" + response.data[i].images.fixed_height_still.url + "'data-animate='" + response.data[i].images.fixed_height.url + "'data-state='animate' class='gif'>";
+
+	// var stillLink = "<img src='" + response.data[i].images.fixed_height_still.url + "'>";
+	$("#display").append(spotOne);
+
+
+	// Next, we'll create an on-click event for each gif that will let it start/stop
+
+
+	$(".gif").on("click", function() {
+
+		var state = $(this).attr("data-state");
+		var animateSource = $(this).attr("data-animate");
+		var stillSource = $(this).attr("data-still");
+
+		if (state === "still") {
+			$(this).attr("src", animateSource);
+			$(this).attr("data-state", "animate");
+			console.log(state);
+		}
+
+		if (state === "animate") {
+			$(this).attr("src", stillSource);
+			$(this).attr("data-state", "still");
+			console.log(state);
+
+		}
+
+
+	})
+
+}
+
+	console.log(queryURL);
+
+})
+
+};
+
+// This function creates the original buttons. It empties out the buttons-view div,
+// Then it creates a for loop that goes through our array, 
+// Then it creates a variable called a that makes a new button with the class "animal" and the attribute "data-name" with the value of topics[i] (our array). This is important for var animal up above.
+// Then we give it a text attribute so it will display what's in the array on the button, then we put a (the button we made) into our "buttons-view" div.
+
+function renderButtons() {
+
+// Create the Original Buttons
+$("#buttons-view").empty();
+
+for (var i = 0; i < topics.length; i++) {
+
+	a = $("<button>");
+	a.addClass("animal");
+	a.attr("data-name", topics[i]);
+	a.text(topics[i]);
+	$("#buttons-view").append(a);
+	console.log(a);
+}
+};
+
+
+
+
+// Push in New Buttons to Topics Array. When you click on the search button (id of add-animal), it starts this event.
+$("#add-animal").on("click", function(event) {
+	event.preventDefault();
+
+	// This line grabs the input from the textbox
+	var newAnimal = $("#animal-input").val().trim();
+
+	// Add animal from the textbox to our arry
+	topics.push(newAnimal);
+
+	// Call the renderButtons function we made earlier 
+	renderButtons();
+});
+
+	// Add a click event listener to all elements with the class of "animal"
+	$(document).on("click", ".animal", displayGifs);
+
+renderButtons();
+
+
+
+	
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
